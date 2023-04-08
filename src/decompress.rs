@@ -89,7 +89,7 @@ impl Decoder {
         }
         let dst = &mut output[..hdr.decompress_len];
         let mut dec =
-            Decompress { src: &input[hdr.len..], s: 0, dst: dst, d: 0 };
+            Decompress { src: &input[hdr.len..], s: 0, dst, d: 0 };
         dec.decompress()?;
         Ok(dec.dst.len())
     }
@@ -131,7 +131,7 @@ impl<'s, 'd> Decompress<'s, 'd> {
         while self.s < self.src.len() {
             let byte = self.src[self.s];
             self.s += 1;
-            if byte & 0b000000_11 == 0 {
+            if byte & 0b0000_0011 == 0 {
                 let len = (byte >> 2) as usize + 1;
                 self.read_literal(len)?;
             } else {
@@ -210,7 +210,7 @@ impl<'s, 'd> Decompress<'s, 'd> {
             || ((self.dst.len() - self.d) as u64) < len
         {
             return Err(Error::Literal {
-                len: len,
+                len,
                 src_len: (self.src.len() - self.s) as u64,
                 dst_len: (self.dst.len() - self.d) as u64,
             });
@@ -307,7 +307,7 @@ impl<'s, 'd> Decompress<'s, 'd> {
                     // srcp and dstp can overlap, so use ptr::copy.
                     debug_assert!(self.d + 16 <= self.dst.len());
                     ptr::copy(srcp, dstp, 16);
-                    self.d += diff as usize;
+                    self.d += diff;
                     dstp = dstp.add(diff);
                 }
                 while self.d < end {
@@ -361,7 +361,7 @@ impl Header {
         }
         if decompress_len > MAX_INPUT_SIZE {
             return Err(Error::TooBig {
-                given: decompress_len as u64,
+                given: decompress_len,
                 max: MAX_INPUT_SIZE,
             });
         }

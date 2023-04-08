@@ -224,8 +224,8 @@ impl PartialEq for Error {
                 byte1 == byte2
             }
             (
-                &StreamHeaderMismatch { bytes: ref bytes1 },
-                &StreamHeaderMismatch { bytes: ref bytes2 },
+                StreamHeaderMismatch { bytes: bytes1 },
+                StreamHeaderMismatch { bytes: bytes2 },
             ) => bytes1 == bytes2,
             (
                 &UnsupportedChunkType { byte: byte1 },
@@ -305,7 +305,7 @@ impl fmt::Display for Error {
                 f,
                 "snappy: corrupt input (expected sNaPpY stream \
                          header but got {})",
-                escape(&**bytes)
+                escape(bytes)
             ),
             Error::UnsupportedChunkType { byte } => write!(
                 f,

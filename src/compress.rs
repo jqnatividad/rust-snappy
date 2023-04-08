@@ -130,7 +130,7 @@ impl Encoder {
             // Find the next block.
             let mut src = input;
             if src.len() > MAX_BLOCK_SIZE {
-                src = &src[..MAX_BLOCK_SIZE as usize];
+                src = &src[..MAX_BLOCK_SIZE];
             }
             input = &input[src.len()..];
 
@@ -182,11 +182,11 @@ impl<'s, 'd> Block<'s, 'd> {
     #[inline(always)]
     fn new(src: &'s [u8], dst: &'d mut [u8], d: usize) -> Block<'s, 'd> {
         Block {
-            src: src,
+            src,
             s: 0,
             s_limit: src.len(),
-            dst: dst,
-            d: d,
+            dst,
+            d,
             next_emit: 0,
         }
     }
@@ -321,13 +321,13 @@ impl<'s, 'd> Block<'s, 'd> {
     /// [4, 65535].
     #[inline(always)]
     fn emit_copy(&mut self, offset: usize, mut len: usize) {
-        debug_assert!(1 <= offset && offset <= 65535);
+        debug_assert!((1..=65535).contains(&offset));
         // Copy operations only allow lengths up to 64, but we'll allow bigger
         // lengths and emit as many operations as we need.
         //
         // N.B. Since our block size is 64KB, we never actually emit a copy 4
         // operation.
-        debug_assert!(4 <= len && len <= 65535);
+        debug_assert!((4..=65535).contains(&len));
 
         // Emit copy 2 operations until we don't have to.
         // We check on 68 here and emit a shorter copy than 64 below because
@@ -361,8 +361,8 @@ impl<'s, 'd> Block<'s, 'd> {
     /// must be in the range [1, 65535] and len must be in the range [1, 64].
     #[inline(always)]
     fn emit_copy2(&mut self, offset: usize, len: usize) {
-        debug_assert!(1 <= offset && offset <= 65535);
-        debug_assert!(1 <= len && len <= 64);
+        debug_assert!((1..=65535).contains(&offset));
+        debug_assert!((1..=64).contains(&len));
         self.dst[self.d] = (((len - 1) as u8) << 2) | (Tag::Copy2 as u8);
         bytes::write_u16_le(offset as u16, &mut self.dst[self.d + 1..]);
         self.d += 3;
@@ -514,7 +514,7 @@ impl Encoder {
         for x in &mut *table {
             *x = 0;
         }
-        BlockTable { table: table, shift: shift }
+        BlockTable { table, shift }
     }
 }
 

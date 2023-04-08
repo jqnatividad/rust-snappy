@@ -15,10 +15,10 @@ pub const MAX_COMPRESS_BLOCK_SIZE: usize = 76490;
 ///
 /// This may appear more than once in a stream in order to support easy
 /// concatenation of files compressed in the Snappy frame format.
-pub const STREAM_IDENTIFIER: &'static [u8] = b"\xFF\x06\x00\x00sNaPpY";
+pub const STREAM_IDENTIFIER: &[u8] = b"\xFF\x06\x00\x00sNaPpY";
 
 /// The body of the special stream identifier.
-pub const STREAM_BODY: &'static [u8] = b"sNaPpY";
+pub const STREAM_BODY: &[u8] = b"sNaPpY";
 
 /// The length of a snappy chunk type (1 byte), packet length (3 bytes)
 /// and CRC field (4 bytes). This is technically the chunk header _plus_

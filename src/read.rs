@@ -135,12 +135,12 @@ impl<R: io::Read> io::Read for FrameDecoder<R> {
             }
             let len = len64 as usize;
             match ty {
-                Err(b) if 0x02 <= b && b <= 0x7F => {
+                Err(b) if (0x02..=0x7F).contains(&b) => {
                     // Spec says that chunk types 0x02-0x7F are reserved and
                     // conformant decoders must return an error.
                     fail!(Error::UnsupportedChunkType { byte: b });
                 }
-                Err(b) if 0x80 <= b && b <= 0xFD => {
+                Err(b) if (0x80..=0xFD).contains(&b) => {
                     // Spec says that chunk types 0x80-0xFD are reserved but
                     // skippable.
                     self.r.read_exact(&mut self.src[0..len])?;
